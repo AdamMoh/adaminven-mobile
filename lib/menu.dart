@@ -1,71 +1,3 @@
-# adaminven - Mobile Version
-## Flutter Assignment
-### Assignment 7
-
-<details>
-<summary>1. What are the main differences between stateless and stateful widget in Flutter?</summary>
-
-Stateless Widget: The widgets whose state can not be altered once they are built are called stateless widgets. These widgets are immutable once they are built.
-
-Stateful Widget: The widgets whose state can be altered once they are built are called stateful Widgets. These states are mutable and can be changed multiple times in their lifetime.
-</details>
-
-<details>
-<summary>2. Explain all widgets that you used in this assignment.</summary>
-
-1. Scaffold – Implements the basic material design visual layout structure.
-2. App-Bar – To create a bar at the top of the screen.
-3. Text - To write anything on the screen.
-4. Container – To contain any widget.
-5. Center – To provide center alignment to other widgets.
-6. Column - To displays its children in a vertical array
-</details>
-
-<details>
-<summary>3. Explain how you implemented the checklist above step-by-step (not just following the tutorial)</summary>
-
-1. Create flutter project:
-```
-flutter create adaminven
-```
-
-2. Change the directory to a new directory that created after execute flutter project command, and run the initial project
-```
-cd adaminven
-flutter run
-```
-
-3. change `main.dart` to include `menu.dart`
-
-```
-import 'package:flutter/material.dart';
-import 'package:adaminven/menu.dart';
-
-void main() {
-  runApp(const MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Adam Inventory',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.red.shade200),
-        useMaterial3: true,
-      ),
-      home: MyHomePage(),
-      debugShowCheckedModeBanner: false,
-    );
-  }
-}
-
-```
-
-and the `menu.dart` will be like this:
-```
 // ignore_for_file: unused_import
 
 import 'package:flutter/material.dart';
@@ -181,6 +113,3 @@ class ShopCard extends StatelessWidget {
     );
   }
 }
-
-```
-</details>

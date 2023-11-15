@@ -184,3 +184,88 @@ class ShopCard extends StatelessWidget {
 
 ```
 </details>
+
+
+### Assignment 8
+
+<details>
+<summary>1. Explain the difference between Navigator.push() and Navigator.pushReplacement(), accompanied by examples of the correct usage of both methods!</summary>
+
+Navigator.push() and Navigator.pushReplacement() are methods used for navigating between different screens or routes in flutter app.
+
+1. **Navigator.push()**:
+- This method is used to push a new route onto the navigator's stack, which results in displaying a new screen on top of the existing ones.
+- It adds the new route to the stack, allowing users to navigate back to the previous screen using the back button or gesture.
+- This is typically used to navigate to a new screen and allow users to navigate back to the
+previous one.
+
+example:
+```
+onTap: () {
+          // Show SnackBar when clicked
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+                content: Text("You pressed the ${item.name} button!")));
+
+          // Navigate to the appropriate route (depending on the button type)
+          if (item.name == "Add Product") {
+            Navigator.push(context,
+                MaterialPageRoute(builder: (context) => const InvenFormPage()));
+          }
+        },
+```
+
+2. **Navigator.pushReplacement()**:
+- This method is used to replace the current route with a new one. It removes the current route from the stack and adds the new one.
+
+- The user won't be able to navigate back to the previous screen because it's replaced in the stack. This is useful to replace the current screen with a new one and don't want the user to go back to the previous screen.
+
+example:
+```
+onPressed: () {
+  Navigator.pushReplacement(
+    context,
+    MaterialPageRoute(builder: (context) => NewScreen()),
+  );
+}
+```
+</details>
+
+
+<details>
+<summary>2. Explain each layout widget in Flutter and their respective usage contexts!</summary>
+
+- Scaffold: This widget is a basic structure for implementing material design visual layout structure.
+- Drawer: is a slide-in menu or panel that is typically used to provide navigation options to the user.
+- Form: This widget is used to create a form, and wraps all the form fields and handles their validation.
+- ListView: This widget is used to create a scrollable list of widgets, and contain the various form fields in a scrollable list
+- TextFormField: This widget is used to create a text input field within a form.
+- AppBar: This widget represents the app bar at the top of the screen.
+</details>
+
+<details>
+<summary>3. List the form input elements you used in this assignment and explain why you used these input elements!</summary>
+
+- TextFormField: This widget is used to create a text input field and validate it depending on the text field type.
+
+</details>
+
+<details>
+<summary>4. How is clean architecture implemented in a Flutter application?</summary>
+
+In the context of Flutter, clean architecture can be implemented by dividing the application into different layers: Presentation Layer, Domain Layer, and Data Layer. Each layer has its specific responsibilities and dependencies.
+
+</details>
+
+<details>
+<summary>5. Explain how you implemented the checklist above step-by-step! (not just following the tutorial)</summary>
+
+1. Separate the screen(UI) and widget file to different folders.
+
+2. create a new input form so that the user can add a new item to the inventory.
+
+3. create a `Drawer` to make the user easier to navigate through the inventory app.
+
+
+</details>

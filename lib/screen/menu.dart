@@ -1,5 +1,3 @@
-// ignore_for_file: unused_import
-
 import 'package:flutter/material.dart';
 import 'package:adaminven/widgets/left_drawer.dart';
 import 'package:adaminven/widgets/inven_card.dart';
@@ -7,9 +5,9 @@ import 'package:adaminven/widgets/inven_card.dart';
 class MyHomePage extends StatelessWidget {
   MyHomePage({Key? key}) : super(key: key);
   final List<InvenItem> items = [
-    InvenItem("View Products", Icons.checklist),
-    InvenItem("Add Product", Icons.add_shopping_cart),
-    InvenItem("Logout", Icons.logout),
+    InvenItem("View Products", Icons.checklist, Colors.black),
+    InvenItem("Add Product", Icons.add_shopping_cart, Colors.black),
+    InvenItem("Logout", Icons.logout, Colors.black),
   ];
 
   @override
@@ -19,32 +17,28 @@ class MyHomePage extends StatelessWidget {
         title: const Text(
           'Adam Inventory',
         ),
-        backgroundColor: Colors.indigo,
-        foregroundColor: Colors.white,
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.amber,
       ),
       drawer: const LeftDrawer(),
       body: SingleChildScrollView(
-        // Scrolling wrapper widget
         child: Padding(
-          padding: const EdgeInsets.all(10.0), // Set padding for the page
+          padding: const EdgeInsets.all(10.0),
           child: Column(
-            // Widget to display children vertically
             children: <Widget>[
               const Padding(
                 padding: EdgeInsets.only(top: 10.0, bottom: 10.0),
-                // Text widget to display text with center alignment and appropriate style
                 child: Text(
-                  'Adam Inventory', // Text indicating the shop name
+                  'Adam Inventory',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 30,
                     fontWeight: FontWeight.bold,
+                    color: Colors.amber, // Set text color to gold
                   ),
                 ),
               ),
-              // Grid layout
               GridView.count(
-                // Container for our cards.
                 primary: true,
                 padding: const EdgeInsets.all(20),
                 crossAxisSpacing: 10,
@@ -52,8 +46,14 @@ class MyHomePage extends StatelessWidget {
                 crossAxisCount: 3,
                 shrinkWrap: true,
                 children: items.map((InvenItem item) {
-                  // Iteration for each item
-                  return InvenCard(item);
+                  return Card(
+                    color: Colors.black, // Set card background color to black
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15.0),
+                    ),
+                    elevation: 5.0,
+                    child: InvenCard(item),
+                  );
                 }).toList(),
               ),
             ],

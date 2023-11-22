@@ -269,3 +269,662 @@ In the context of Flutter, clean architecture can be implemented by dividing the
 
 
 </details>
+
+
+### Assignment 9
+
+<details>
+<summary>1. Can we retrieve JSON data without creating a model first? If yes, is it better than creating a model before retrieving JSON data?</summary>
+
+Retrieving JSON data in Flutter typically involves making HTTP requests to a server or an API endpoint, but using a model, it's better to map it to object.
+
+
+
+</details>
+
+<details>
+
+<summary>2. Explain the function of CookieRequest and explain why a CookieRequest instance needs to be shared with all components in a Flutter application.</summary>
+
+CookieRequest is a class that represents a request for a cookie. It is used to retrieve a cookie from the server. The cookie must be shared with other components in order to maintain the state.
+
+
+</details>
+
+<details>
+<summary>3. Explain the mechanism of fetching data from JSON until it can be displayed on Flutter.</summary>
+
+Make an HTTP request, parsing the JSON response, and display it to the screen.
+
+
+</details>
+
+<details>
+<summary>4. Explain the authentication mechanism from entering account data on Flutter to Django authentication completion and the display of menus on Flutter.</summary>
+
+First, the user is prompted to enter their account credentials, and then Flutter sends the credentials to django to authenticate the account. If the accounts exist, then Django gives a response to flutter again with a cookie that we can use after logging in to display the menu.
+
+
+</details>
+
+<details>
+<summary>5. List all the widgets you used in this assignment and explain their respective functions.</summary>
+
+- FutureBuilder, A widget that builds itself based on a Future.
+
+- GestureDetector, Detects gestures on its child and invokes a callback.
+
+- AlertDialog, A pop-up dialog that informs the user about an event.
+
+- ElevatedButton, A Material Design raised button.
+
+- TextEditingController, Controllers for handling text input. Used to get the entered username and password.
+
+
+</details>
+
+#### Assignment 9 Step by step
+
+<details>
+<summary>1. Create custom models</summary>
+
+```
+// To parse this JSON data, do
+//
+//     final items = itemsFromJson(jsonString);
+
+import 'dart:convert';
+
+List<Items> itemsFromJson(String str) =>
+    List<Items>.from(json.decode(str).map((x) => Items.fromJson(x)));
+
+String itemsToJson(List<Items> data) =>
+    json.encode(List<dynamic>.from(data.map((x) => x.toJson())));
+
+class Items {
+  String model;
+  int pk;
+  Fields fields;
+
+  Items({
+    required this.model,
+    required this.pk,
+    required this.fields,
+  });
+
+  factory Items.fromJson(Map<String, dynamic> json) => Items(
+        model: json["model"],
+        pk: json["pk"],
+        fields: Fields.fromJson(json["fields"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "model": model,
+        "pk": pk,
+        "fields": fields.toJson(),
+      };
+}
+
+class Fields {
+  int user;
+  String name;
+  int amount;
+  String price;
+  String category;
+  String description;
+  DateTime dateAdded;
+
+  Fields({
+    required this.user,
+    required this.name,
+    required this.amount,
+    required this.price,
+    required this.category,
+    required this.description,
+    required this.dateAdded,
+  });
+
+  factory Fields.fromJson(Map<String, dynamic> json) => Fields(
+        user: json["user"],
+        name: json["name"],
+        amount: json["amount"],
+        price: json["price"],
+        category: json["category"],
+        description: json["description"],
+        dateAdded: DateTime.parse(json["date_added"]),
+      );
+
+  Map<String, dynamic> toJson() => {
+        "user": user,
+        "name": name,
+        "amount": amount,
+        "price": price,
+        "category": category,
+        "description": description,
+        "date_added": dateAdded.toIso8601String(),
+      };
+}
+
+```
+
+
+</details>
+
+<details>
+<summary>2. Login page</summary>
+
+```
+// ignore_for_file: use_build_context_synchronously
+
+import 'package:adaminven/screen/menu.dart';
+import 'package:adaminven/screen/registerpage.dart';
+import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+
+void main() {
+  runApp(const LoginApp());
+}
+
+class LoginApp extends StatelessWidget {
+  const LoginApp({Key? key});
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Login Adam Inven',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: const LoginPage(),
+    );
+  }
+}
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({Key? key});
+
+  @override
+  _LoginPageState createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  @override
+  Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    return Scaffold(
+      body: Center(
+        child: Card(
+          margin: const EdgeInsets.all(16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 8.0,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const Text(
+                  'Login Adam Inven',
+                  style: TextStyle(
+                    fontSize: 24.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 24.0),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                TextField(
+                  controller: _passwordController,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 24.0),
+                ElevatedButton(
+                  onPressed: () async {
+                    String username = _usernameController.text;
+                    String password = _passwordController.text;
+                    final response = await request
+                        .login("http://localhost:8000/auth/login/", {
+                      'username': username,
+                      'password': password,
+                    });
+
+                    if (request.loggedIn) {
+                      String message = response['message'];
+                      String uname = response['username'];
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => MyHomePage()),
+                      );
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(content: Text("$message Welcome, $uname.")),
+                        );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Login Failed'),
+                          content: Text(response['message']),
+                          actions: [
+                            TextButton(
+                              child: const Text('OK'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Login'),
+                ),
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (context) => RegisterPage()),
+                    );
+                  },
+                  child: const Text('Register'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+```
+
+</details>
+
+<details>
+<summary>3. Item lists page with detail</summary>
+
+```
+// ignore_for_file: prefer_const_constructors, prefer_const_literals_to_create_immutables, unnecessary_string_interpolations
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+import 'package:adaminven/models/item.dart';
+import 'package:adaminven/widgets/left_drawer.dart';
+
+class ItemPage extends StatefulWidget {
+  const ItemPage({Key? key}) : super(key: key);
+
+  @override
+  _ItemPageState createState() => _ItemPageState();
+}
+
+class _ItemPageState extends State<ItemPage> {
+  Future<List<Items>> fetchProduct() async {
+    var url = Uri.parse('http://localhost:8000/json/');
+    var response = await http.get(
+      url,
+      headers: {"Content-Type": "application/json"},
+    );
+
+    var data = jsonDecode(utf8.decode(response.bodyBytes));
+
+    List<Items> listProduct = [];
+    for (var d in data) {
+      if (d != null) {
+        listProduct.add(Items.fromJson(d));
+      }
+    }
+    return listProduct;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Item List'),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.amber,
+      ),
+      drawer: const LeftDrawer(),
+      body: FutureBuilder(
+        future: fetchProduct(),
+        builder: (context, AsyncSnapshot<List<Items>> snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(
+              child: Text('Error: ${snapshot.error}'),
+            );
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    "No Item available.",
+                    style: TextStyle(color: Colors.amber, fontSize: 20),
+                  ),
+                  SizedBox(height: 8),
+                ],
+              ),
+            );
+          } else {
+            return ListView.builder(
+              itemCount: snapshot.data!.length,
+              itemBuilder: (_, index) => GestureDetector(
+                onTap: () {
+                  // Navigate to a new screen to show details when the card is clicked
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          ItemDetailPage(item: snapshot.data![index]),
+                    ),
+                  );
+                },
+                child: Card(
+                  color: Colors.black87,
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(20.0),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "${snapshot.data![index].fields.name}",
+                          style: TextStyle(
+                            fontSize: 18.0,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.amber,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          }
+        },
+      ),
+    );
+  }
+}
+
+class ItemDetailPage extends StatelessWidget {
+  final Items item;
+
+  const ItemDetailPage({Key? key, required this.item}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(item.fields.name),
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.amber,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Card(
+          color: Colors.black, // Set card background color to black
+          elevation: 5.0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15.0), // Set rounded corners
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20.0),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  "Name: ${item.fields.name}",
+                  style: TextStyle(
+                    fontSize: 18.0,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.amber, // Set text color to gold
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Amount: ${item.fields.amount}",
+                  style: TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Price: ${item.fields.price}",
+                  style: TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Category: ${item.fields.category}",
+                  style: TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Description: ${item.fields.description}",
+                  style: TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  "Date Added: ${item.fields.dateAdded}",
+                  style: TextStyle(
+                    color: Colors.amber,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+```
+</details>
+
+<details>
+<summary>4. Register Page (Bonus)</summary>
+
+```
+// ignore_for_file: unused_import, library_private_types_in_public_api, use_build_context_synchronously, prefer_const_constructors, unused_local_variable
+
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:adaminven/screen/login.dart';
+import 'package:flutter/material.dart';
+import 'package:pbp_django_auth/pbp_django_auth.dart';
+import 'package:provider/provider.dart';
+
+class RegisterPage extends StatefulWidget {
+  const RegisterPage({Key? key}) : super(key: key);
+
+  @override
+  _RegisterPageState createState() => _RegisterPageState();
+}
+
+class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _password1Controller = TextEditingController();
+  final TextEditingController _password2Controller = TextEditingController();
+
+  Future<Map<String, dynamic>> postJson(
+    String url,
+    Map<String, String> headers,
+    Map<String, dynamic> body,
+  ) async {
+    final response = await http.post(
+      Uri.parse(url),
+      headers: headers,
+      body: jsonEncode(body),
+    );
+
+    // Parse the response JSON
+    return jsonDecode(response.body);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final request = context.watch<CookieRequest>();
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Register'),
+      ),
+      body: Center(
+        child: Card(
+          margin: const EdgeInsets.all(16.0),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
+          elevation: 8.0,
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text(
+                  'Register Adam Inven',
+                  style: TextStyle(
+                    fontSize: 20.0,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16.0),
+                TextField(
+                  controller: _usernameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Username',
+                  ),
+                ),
+                const SizedBox(height: 12.0),
+                TextField(
+                  controller: _password1Controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Password',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 12.0),
+                TextField(
+                  controller: _password2Controller,
+                  decoration: const InputDecoration(
+                    labelText: 'Confirm Password',
+                  ),
+                  obscureText: true,
+                ),
+                const SizedBox(height: 24.0),
+                ElevatedButton(
+                  onPressed: () async {
+                    String username = _usernameController.text;
+                    String password1 = _password1Controller.text;
+                    String password2 = _password2Controller.text;
+
+                    if (password1 != password2) {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Registration Failed'),
+                          content: const Text('Passwords do not match.'),
+                          actions: [
+                            TextButton(
+                              child: const Text('OK'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                      return;
+                    }
+
+                    final response = await postJson(
+                      "http://localhost:8000/auth/register/",
+                      {
+                        "Content-Type": "application/json",
+                      },
+                      {
+                        'username': username,
+                        'password1': password1,
+                        'password2': password2,
+                      },
+                    );
+
+                    if (response['message'] == 'Register Success!') {
+                      String message = response['message'];
+                      String uname = response['username'];
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(builder: (context) => LoginPage()),
+                      );
+                      ScaffoldMessenger.of(context)
+                        ..hideCurrentSnackBar()
+                        ..showSnackBar(
+                          SnackBar(
+                              content:
+                                  Text("$message Please login again, $uname.")),
+                        );
+                    } else {
+                      showDialog(
+                        context: context,
+                        builder: (context) => AlertDialog(
+                          title: const Text('Registration Failed'),
+                          content: Text(response['message']),
+                          actions: [
+                            TextButton(
+                              child: const Text('OK'),
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+                            ),
+                          ],
+                        ),
+                      );
+                    }
+                  },
+                  child: const Text('Register'),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+```
+
+</details>
